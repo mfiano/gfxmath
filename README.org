@@ -1,0 +1,178 @@
+* gfxmath
+
+** About
+
+#+BEGIN_QUOTE
+GfxMath is a math library primarily for game development and graphical simulations, with a focus on
+correctness, extensibility, and simplicity (in that order) over performance.
+
+It provides a type hierarchy for matrices, vectors, and quaternions which can be used to perform
+geometrical calculations useful for graphical applications, such as interfacing with OpenGL.
+
+It takes a unique and somewhat opinionated approach to overcome some difficulties that we have
+encountered as game developers.
+#+END_QUOTE
+
+** Table of Contents
+
+- [[#about][About]]
+- [[#rationale][Rationale]]
+- [[#versioning][Versioning]]
+- [[#usage][Usage]]
+- [[#limitations][Limitations]]
+- [[#unit-tests][Unit Tests]]
+- [[#similar-projects][Similar Projects]]
+- [[#license][License]]
+
+** Rationale
+
+GfxMath was written to favor an extensible and more maintainable generic function protocol over the
+approach by some other libraries, such as [[https://github.com/mfiano/origin][origin]], that split
+types and the functions operating on them into separate packages.
+
+Additionally, in contrast to some other libraries, GfxMath favors simplicity, which also aids in
+maintainability. This is accomplished by a =define-op= macro that all operations are defined with,
+and macros for iterating over the various shapes of the aggregate math types. The expansion of
+=define-op= defines a generic function, all applicable methods matching the rules of a custom lambda
+list that is parsed, as well as automatically generated documentation strings for the methods, by
+means of a simple templating text pre-processor with knowledge of the custom lambda list for
+emitting friendly names of the types it describes. With such an extensive array of mathematical
+operations, keeping the library small and maintainable was one of our primary objectives, and
+=define-op= was our solution.
+
+Also to aid in simplicity, we roll the implementation of nearly all operations in loops, as opposed
+to some other libraries that manually, or by means of a macro, unroll loop operations. Again, this
+is to keep the codebase at a maintainable size. A notable exception is 4x4 matrix inversion, in
+which we take the approach of a macro generating the piles of code.
+
+Finally, GfxMath attempts to solve a real problem we've encountered in our work in the field of game
+development. Single-precision floating point operations just do not have enough bits in their
+representation to apply a chain of operations before the end result is uploaded to the GPU. Using
+double-precision floating point values in the underlying storage of the math types means that we
+have to coerce many arrays to single-precision floating point values many times per frame in a
+graphical application, because it is a widely known fact that using double-precision floating point
+values on the GPU is a serious performance trap. To combat this conundrum, all math types are
+objects wrapping both a double-precision and single-precision floating point array. All operations
+use the double-precision array for its extra guard bits to reduce numerical error, and the
+single-precision floating point array remains initialized to all zero values until explicitly asked
+to be filled with the values of the double-precision array with the =to-array= or =to-array!=
+generic functions when supplied a =:single-float= keyword argument. This is space trade-off we are
+willing to make, as it reduces precision issues with long chains of operations susceptible to
+numerical error, and the extra space in system memory is rarely ever an issue, as there will likely
+be a scarcity of available GPU memory long before system memory.
+
+** Usage
+
+Quicklisp users can also clone this repository to their =local-projects= directory and load the
+system with it.
+
+The complete API reference with all documentation strings is not included in this README, as it
+would be quite lengthy. Instead, one can use Common Lisp's =apropos= functionality to search for
+operations. All constructors are conveniently prefixed with =make-=. To list all constructors as an
+example:
+
+#+BEGIN_SRC common-lisp
+(apropos "make" :gfxmath t)
+#+END_SRC
+
+After finding an interesting function, you can view the documentation of all associated methods with
+=describe=. The following shows the documentation of all methods with the =*= (multiplication)
+operator:
+
+#+BEGIN_SRC lisp
+(describe :gfxmath:*)
+;; * names a generic function:
+;; Lambda-list: (OBJECT1 OBJECT2)
+;; Argument precedence order: (OBJECT1 OBJECT2)
+;; Derived type: (FUNCTION (T T) *)
+;; Method-combination: STANDARD
+;; Methods:
+;;   (* (QUATERNION QUATERNION))
+;;     Documentation:
+;;       Multiply the quaternion OBJECT1 by the quaternion OBJECT2, storing the result in a new quaternion.
+;;   (* (MATRIX4 VECTOR4))
+;;     Documentation:
+;;       Multiply the 4x4 matrix OBJECT1 by the 4-dimensional vector OBJECT2, storing the result in a new 4-dimensional vector.
+;;   (* (MATRIX3 VECTOR3))
+;;     Documentation:
+;;       Multiply the 3x3 matrix OBJECT1 by the 3-dimensional vector OBJECT2, storing the result in a new 3-dimensional vector.
+;;   (* (MATRIX2 VECTOR2))
+;;     Documentation:
+;;       Multiply the 2x2 matrix OBJECT1 by the 2-dimensional vector OBJECT2, storing the result in a new 2-dimensional vector.
+;;   (* (MATRIX4 MATRIX4))
+;;     Documentation:
+;;       Multiply the 4x4 matrix OBJECT1 by the 4x4 matrix OBJECT2, storing the result in a new 4x4 matrix.
+;;   (* (MATRIX3 MATRIX3))
+;;     Documentation:
+;;       Multiply the 3x3 matrix OBJECT1 by the 3x3 matrix OBJECT2, storing the result in a new 3x3 matrix.
+;;   (* (MATRIX2 MATRIX2))
+;;     Documentation:
+;;       Multiply the 2x2 matrix OBJECT1 by the 2x2 matrix OBJECT2, storing the result in a new 2x2 matrix.
+;;   (* (VECTOR4 VECTOR4))
+;;     Documentation:
+;;       Perform component-wise multiplication by multiplying each component of the 4-dimensional vector OBJECT1 by the corresponding component of the 4-dimensional vector OBJECT2, storing the result in a new 4-dimensional vector.
+;;   (* (VECTOR3 VECTOR3))
+;;     Documentation:
+;;       Perform component-wise multiplication by multiplying each component of the 3-dimensional vector OBJECT1 by the corresponding component of the 3-dimensional vector OBJECT2, storing the result in a new 3-dimensional vector.
+;;   (* (VECTOR2 VECTOR2))
+;;     Documentation:
+;;       Perform component-wise multiplication by multiplying each component of the 2-dimensional vector OBJECT1 by the corresponding component of the 2-dimensional vector OBJECT2, storing the result in a new 2-dimensional vector.
+;;   (* (QUATERNION REAL))
+;;     Documentation:
+;;       Perform scalar multiplication by multiplying each component of the quaternion OBJECT1 by the scalar OBJECT2, storing the result in a new quaternion.
+;;   (* (VECTOR4 REAL))
+;;     Documentation:
+;;       Perform scalar multiplication by multiplying each component of the 4-dimensional vector OBJECT1 by the scalar OBJECT2, storing the result in a new 4-dimensional vector.
+;;   (* (VECTOR3 REAL))
+;;     Documentation:
+;;       Perform scalar multiplication by multiplying each component of the 3-dimensional vector OBJECT1 by the scalar OBJECT2, storing the result in a new 3-dimensional vector.
+;;   (* (VECTOR2 REAL))
+;;     Documentation:
+;;       Perform scalar multiplication by multiplying each component of the 2-dimensional vector OBJECT1 by the scalar OBJECT2, storing the result in a new 2-dimensional vector.
+#+END_SRC
+
+Note that if browsing the source code to discover the available functionality or documentation,
+=define-op= is a macro that expands to possibly multiple methods each with a specific documentation
+string.
+
+** Limitations
+
+- Some operations on matrices require knowledge of their intended use. For example, retrieving the
+scale of a 3x3 matrix is meaningless, as it must be known whether the matrix represents a
+2-dimensional transformation matrix or a 3-dimensional rotation matrix. Support for context-aware
+matrices is a planned feature for v1.0.0.
+
+** Unit Tests
+
+GfxMath includes a suite of approximately 900 unit tests that cover the full range of the supported
+mathematical operations. To run them all, do the following:
+
+If using Quicklisp, first ensure you have [[https://github.com/fukamachi/prove][prove]] installed
+with:
+
+#+BEGIN_SRC common-lisp
+(ql:quickload :prove)
+#+END_SRC
+
+Then, run:
+
+#+BEGIN_SRC common-lisp
+(asdf:test-system :gfxmath)
+#+END_SRC
+
+** Similar Projects
+
+- [[https://github.com/mfiano/origin][origin]]: A graphics math library with an emphasis on
+correctness and performance. GfxMath was developed by one of the same authors, as an attempt to
+favor extensibility and simplicity over performance, while still retaining the correctness quality.
+
+- [[https://github.com/cbaggers/rtg-math][rtg-math]]
+
+- [[https://github.com/Shinmera/3d-vectors][3d-vectors]] and [[https://github.com/Shinmera/3d-matrices][3d-matrices]]
+
+** License
+
+Copyright © 2021 Michael Fiano <mail@mfiano.net>.
+
+Permissively licensed under the MIT License.
+See [[LICENSE]] for details.
