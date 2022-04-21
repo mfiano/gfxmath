@@ -5,8 +5,9 @@
   :homepage "https://git.mfiano.net/mfiano/gfxmath"
   :version "0.1.1"
   :encoding :utf-8
-  :depends-on (#:mfiano-utils
-               #:str)
+  :depends-on
+  (#:mfiano-utils
+   #:str)
   :in-order-to ((asdf:test-op (asdf:test-op #:gfxmath.test)))
   :pathname "src"
   :serial t

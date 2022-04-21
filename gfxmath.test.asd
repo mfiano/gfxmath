@@ -3,9 +3,10 @@
   :author "Michael Fiano <mail@mfiano.net>"
   :license "MIT"
   :homepage "https://git.mfiano.net/mfiano/gfxmath"
-  :depends-on (#:gfxmath
-               #:mfiano-utils
-               #:prove)
+  :depends-on
+  (#:gfxmath
+   #:mfiano-utils
+   #:prove)
   :defsystem-depends-on (#:prove-asdf)
   :perform (asdf:test-op (op c) (uiop:symbol-call '#:gfxmath.test '#:run-tests c))
   :pathname "test"
