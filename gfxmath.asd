@@ -2,7 +2,7 @@
   :description "A graphics math library."
   :author "Michael Fiano <mail@mfiano.net>"
   :license "MIT"
-  :homepage "https://github.com/mfiano/gfxmath"
+  :homepage "https://git.mfiano.net/mfiano/gfxmath"
   :version "0.1.1"
   :encoding :utf-8
   :depends-on (#:mfiano-utils

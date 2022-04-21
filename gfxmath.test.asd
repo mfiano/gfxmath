@@ -2,7 +2,7 @@
   :description "Unit tests for gfxmath."
   :author "Michael Fiano <mail@mfiano.net>"
   :license "MIT"
-  :homepage "https://github.com/mfiano/gfxmath"
+  :homepage "https://git.mfiano.net/mfiano/gfxmath"
   :depends-on (#:gfxmath
                #:mfiano-utils
                #:prove)

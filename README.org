@@ -27,8 +27,8 @@ encountered as game developers.
 ** Rationale
 
 GfxMath was written to favor an extensible and more maintainable generic function protocol over the
-approach by some other libraries, such as [[https://github.com/mfiano/origin][origin]], that split
-types and the functions operating on them into separate packages.
+approach by some other libraries, such as [[https://git.mfiano.net/mfiano/origin][origin]], that
+split types and the functions operating on them into separate packages.
 
 Additionally, in contrast to some other libraries, GfxMath favors simplicity, which also aids in
 maintainability. This is accomplished by a =define-op= macro that all operations are defined with,
@@ -162,7 +162,7 @@ Then, run:
 
 ** Similar Projects
 
-- [[https://github.com/mfiano/origin][origin]]: A graphics math library with an emphasis on
+- [[https://git.mfiano.net/mfiano/origin][origin]]: A graphics math library with an emphasis on
 correctness and performance. GfxMath was developed by one of the same authors, as an attempt to
 favor extensibility and simplicity over performance, while still retaining the correctness quality.
 
